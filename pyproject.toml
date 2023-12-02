@@ -1,0 +1,169 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aoc"
+version = "0.0.1"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+authors = [
+    {name = ""},
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements.txt"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 120
+target-version = [
+    "py311",
+]
+
+[tool.coverage.run]
+branch = true
+command_line = "-m pytest"
+disable_warnings = [
+    "module-not-imported",
+    "no-data-collected",
+]
+parallel = true
+source_pkgs = [
+    "aoc",
+]
+
+[tool.coverage.paths]
+source = [
+    "src/",
+    ".tox/**/site-packages/",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+skip_empty = true
+
+[tool.mypy]
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+extra_checks = true
+check_untyped_defs = true
+disallow_subclassing_any = true
+disallow_untyped_decorators = true
+disallow_any_generics = true
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_reexport = true
+warn_return_any = true
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+    "--verbose",
+]
+testpaths = ["tests/"]
+
+[tool.ruff]
+line-length = 120
+select = [
+    "F",      # Pyflakes
+    "E", "W", # pycodestyle
+    "C90",    # mccabe
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "PT",     # flake8-pytest-style
+]
+src = ["src/"]
+target-version = "py311"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+env_list =
+    py{311}
+    mypy-py{311}
+    black
+    ruff
+skip_missing_interpreters = true
+
+[testenv]
+description = run unit tests
+deps =
+    pytest
+commands =
+    python -m pytest
+package = wheel
+wheel_build_env = .pkg
+
+[testenv:coverageclean]
+description = delete coverage data
+deps =
+    coverage[toml]
+commands =
+    python -m coverage erase
+labels =
+    coverage
+skip_install = true
+
+[testenv:coveragerun-py{311}]
+description = measure code coverage
+deps =
+    coverage[toml]
+    pytest
+commands =
+    python -m coverage run
+depends =
+    coverageclean
+labels =
+    coverage
+
+[testenv:coveragereport]
+description = report code coverage
+deps =
+    coverage[toml]
+commands =
+    python -m coverage combine
+    python -m coverage report
+depends =
+    coveragerun-py{311}
+labels =
+    coverage
+skip_install = true
+parallel_show_output = true
+
+[testenv:mypy-py{311}]
+description = run type checks
+deps =
+    mypy
+    pytest
+commands =
+    python -m mypy -p aoc
+    python -m mypy tests/
+
+[testenv:black]
+description = run format checks
+deps =
+    black
+commands =
+    python -m black --check src/ tests/
+skip_install = true
+
+[testenv:ruff]
+description = run lint checks
+deps =
+    ruff
+commands =
+    python -m ruff src/ tests/
+skip_install = true
+"""
