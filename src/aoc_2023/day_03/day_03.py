@@ -28,14 +28,6 @@ def is_star_symbol(x: str) -> bool:
     return x == "*"
 
 
-def is_adjacent_to_symbol(df: pd.DataFrame) -> bool:
-    assert df.shape == (3, 3)
-    if is_int(df.iloc[1, 1]):
-        pass
-    else:
-        return False
-
-
 def find_number_mask(digit_mask: npt.NDArray[np.int32], adjacent_idx: int) -> List[int]:
     number_mask = set()
     current_idx = adjacent_idx
@@ -56,7 +48,7 @@ def find_number_mask(digit_mask: npt.NDArray[np.int32], adjacent_idx: int) -> Li
     return sorted(number_mask)
 
 
-def get_pruned_numbers_list(adjacent_mask: npt.NDArray[bool]) -> List[int]:
+def get_pruned_numbers_list(adjacent_mask: npt.NDArray[np.bool_]) -> List[int]:
     adjacent_indices_pruned = []
     adjacent_indices = np.argwhere(adjacent_mask)
     if len(adjacent_indices) > 0:
@@ -79,7 +71,7 @@ def parse_number_from_indices_list(number_indices: List[int], df_row: Tuple[str]
     return number
 
 
-def part_one(df: pd.DataFrame, mask_is_digit: npt.NDArray[bool]):
+def part_one(df: pd.DataFrame, mask_is_digit: npt.NDArray[np.bool_]) -> None:
     ####################################################################################################################
     # Part one, sum numbers adjacent to symbol that is not .
     ####################################################################################################################
@@ -129,7 +121,7 @@ def part_one(df: pd.DataFrame, mask_is_digit: npt.NDArray[bool]):
     print("part one:", sum(valid_numbers))  # 556367
 
 
-def part_two(df: pd.DataFrame, mask_is_digit: npt.NDArray[bool]):
+def part_two(df: pd.DataFrame, mask_is_digit: npt.NDArray[np.bool_]) -> None:
     ####################################################################################################################
     # Part two, sum of product of exactly two numbers that are adjacent to *
     ####################################################################################################################
