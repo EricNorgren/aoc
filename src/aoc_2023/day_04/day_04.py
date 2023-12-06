@@ -56,8 +56,8 @@ def main() -> None:
                 # Edge case: min_ind==max_ind, creating an empty slice. Increment only the last index
                 num_copies_and_matches[min_ind, 0] += num_copies_and_matches[i, 0]
     tot_num_copies = np.sum(num_copies_and_matches[:, 0])
-    print(f"{tot_value_part_one=}")
-    print(f"{tot_num_copies=}")
+    print(f"{tot_value_part_one=}")  # 22193
+    print(f"{tot_num_copies=}")  # 5625994
 
 
 if __name__ == "__main__":

@@ -12,8 +12,9 @@ def read_file(file_path: Union[str | Path]) -> List[str]:
 
 
 def main() -> None:
-    file_path = "aoc_2023/day_XYZ/input/input.txt"
+    file_path = "aoc_2023/day_XY/input/input.txt"
     lines = read_file(file_path=file_path)
+    print(lines[0])
 
 
 if __name__ == "__main__":

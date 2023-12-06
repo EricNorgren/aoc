@@ -49,6 +49,7 @@ skip_covered = false
 skip_empty = true
 
 [tool.mypy]
+plugins = numpy.typing.mypy_plugin
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
