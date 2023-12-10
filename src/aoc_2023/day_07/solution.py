@@ -52,7 +52,7 @@ class HAND_TYPE(Enum):
         return self.value < other.value
 
     @classmethod
-    def from_unique_num_cards_part_one(cls: Type["HAND_TYPE"], hand: List[int]) -> "HAND_TYPE":
+    def from_hand_part_one(cls: Type["HAND_TYPE"], hand: List[int]) -> "HAND_TYPE":
         values_to_positions = defaultdict(list)
         for index, value in enumerate(hand):
             values_to_positions[value].append(index)
@@ -78,7 +78,7 @@ class HAND_TYPE(Enum):
             return cls.HIGH_CARD
 
     @classmethod
-    def from_unique_num_cards_part_two(cls: Type["HAND_TYPE"], hand: List[int]) -> "HAND_TYPE":
+    def from_hand_part_two(cls: Type["HAND_TYPE"], hand: List[int]) -> "HAND_TYPE":
         _joker_value = CARD_VALUES_PART_TWO_TO_INT["J"]
         if _joker_value in hand:
             # Jokers are powerful
@@ -111,7 +111,7 @@ class HAND_TYPE(Enum):
                 index: value for index, value in enumerate(set(hand))
             }  # mapping index to the unique contents in hand
             # Loop over combinations of hands, keep the highest observed. BRUTE FORCE!!!
-            max_seen_rank = cls.from_unique_num_cards_part_one(hand)  # baseline to compare against
+            max_seen_rank = cls.from_hand_part_one(hand)  # baseline to compare against
             for joker_replacement_targets in exploded_jokers:
                 # joker_replacement_targets will be a tuple of length num_jokers.
                 # each index represents which value the i:th joker should take, via target_unique_values
@@ -120,13 +120,13 @@ class HAND_TYPE(Enum):
                     target_value = target_unique_values[joker_replacement_target]
                     joker_index = joker_positions[joker_write_index]
                     temp_hand[joker_index] = target_value
-                temp_hand_type = cls.from_unique_num_cards_part_one(temp_hand)
+                temp_hand_type = cls.from_hand_part_one(temp_hand)
                 if temp_hand_type > max_seen_rank:
                     max_seen_rank = temp_hand_type
             return max_seen_rank
         else:
             # No joker, proceed as usual
-            return cls.from_unique_num_cards_part_one(hand)
+            return cls.from_hand_part_one(hand)
 
 
 class Hand:
@@ -137,10 +137,10 @@ class Hand:
 
         if game_rules == GAME_RULES.PART_ONE:
             self.line_as_ints = parse_hand(hand_str, card_mapping=CARD_VALUES_PART_ONE_TO_INT)
-            self.hand_type = HAND_TYPE.from_unique_num_cards_part_one(self.line_as_ints)
+            self.hand_type = HAND_TYPE.from_hand_part_one(self.line_as_ints)
         if game_rules == GAME_RULES.PART_TWO:
             self.line_as_ints = parse_hand(hand_str, card_mapping=CARD_VALUES_PART_TWO_TO_INT)
-            self.hand_type = HAND_TYPE.from_unique_num_cards_part_two(self.line_as_ints)
+            self.hand_type = HAND_TYPE.from_hand_part_two(self.line_as_ints)
 
     def __str__(self) -> str:
         return f"{self.line}, {self.line_as_ints}, {self.hand_type}, {self.bet}"
@@ -168,7 +168,7 @@ class Hand:
         return self.hand_type == other.hand_type and self.line_as_ints == other.line_as_ints
 
 
-def calc_winnings(lines: List[str], game_type: GAME_RULES) -> None:
+def calc_winnings(lines: List[str], game_type: GAME_RULES) -> int:
     hands = []
     for line in lines:
         hand = Hand(line, game_rules=game_type)
@@ -178,16 +178,17 @@ def calc_winnings(lines: List[str], game_type: GAME_RULES) -> None:
     for index, h1 in enumerate(sorted_hands):
         winnings = (index + 1) * h1.bet
         sum += winnings
-    print()
-    print(sum)
+    return sum
 
 
 def main() -> None:
     file_path = "aoc_2023/day_07/input/input.txt"
     # file_path = "aoc_2023/day_07/input/mini_input.txt"
     lines = read_file(file_path=file_path)
-    calc_winnings(lines, game_type=GAME_RULES.PART_ONE)  # 247815719
-    calc_winnings(lines, game_type=GAME_RULES.PART_TWO)  # 248747492
+    winnings_p1 = calc_winnings(lines, game_type=GAME_RULES.PART_ONE)
+    print(f"{winnings_p1=}") # 247815719
+    winnings_p2 = calc_winnings(lines, game_type=GAME_RULES.PART_TWO)
+    print(f"{winnings_p2=}") # 248747492
 
 
 if __name__ == "__main__":
