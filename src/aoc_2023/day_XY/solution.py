@@ -13,6 +13,7 @@ def read_file(file_path: Union[str | Path]) -> List[str]:
 
 def main() -> None:
     file_path = "aoc_2023/day_XY/input/input.txt"
+    file_path = "aoc_2023/day_XY/input/mini_input.txt"
     lines = read_file(file_path=file_path)
     print(lines[0])
 
