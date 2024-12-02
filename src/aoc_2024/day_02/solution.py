@@ -18,17 +18,17 @@ def sign(x: int) -> int:
         return -1
 
 
-def check_valid_report(report_ints: list[int], start_is_valid_report: int = 1) -> bool:
+def check_valid_report(report_ints: list[int]) -> bool:
     trend = 0
     for level_first, level_second in zip(report_ints[:-1], report_ints[1:]):
         diff = level_second - level_first
         if not (1 <= abs(diff) <= 3):
-            start_is_valid_report -= 1
+            return False
         if trend == 0:
             trend = sign(diff)
         elif trend != sign(diff):
-            start_is_valid_report -= 1
-    return start_is_valid_report > 0
+            return False
+    return True
 
 def solution_first(lines: list[str]) -> None:
     print("FIRST")
@@ -44,10 +44,10 @@ def solution_first(lines: list[str]) -> None:
 def solution_second(lines: list[str]) -> None:
     print("SECOND")
     num_valid_reports = 0
-    for report_number, report in enumerate(lines):
+    for report in lines:
         report_ints_original = list(map(lambda x: int(x), report.split()))
-        report_ints = report_ints_original
         remove_index = 0
+        report_ints = report_ints_original
         report_ints_length = len(report_ints)
         is_valid_report = check_valid_report(report_ints)
         while not is_valid_report and remove_index < report_ints_length:
@@ -55,11 +55,8 @@ def solution_second(lines: list[str]) -> None:
             report_ints.pop(remove_index)
             remove_index += 1
             is_valid_report = check_valid_report(report_ints)
-            if is_valid_report:
-                break
         if is_valid_report:
             num_valid_reports += 1
-
     print(f"{num_valid_reports=}")
 
 
