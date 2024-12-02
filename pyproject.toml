@@ -1,29 +1,29 @@
+
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=64"]
+# requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "aoc"
-version = "0.0.1"
+name = "ericnorgren-aoc"
+version = "2024.0.1"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {file = "LICENSE"}
 authors = [
-    {name = ""},
+    {name = "My Name", email = "my.name@example.com"},
 ]
 dynamic = ["dependencies"]
+# dynamic = ["dependencies", "version"]
+
+[tool.setuptools_scm]
+# can be empty if no extra settings are needed, presence enables setuptools_scm
 
 [tool.setuptools.dynamic]
 dependencies = {file = "requirements.txt"}
 
 [tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.black]
-line-length = 120
-target-version = [
-    "py311",
-]
+where = ["src/"]
 
 [tool.coverage.run]
 branch = true
@@ -34,7 +34,8 @@ disable_warnings = [
 ]
 parallel = true
 source_pkgs = [
-    "aoc",
+    "aoc_2023",
+    "aoc_2024",
 ]
 
 [tool.coverage.paths]
@@ -49,7 +50,10 @@ skip_covered = false
 skip_empty = true
 
 [tool.mypy]
-plugins = numpy.typing.mypy_plugin
+explicit_package_bases = true
+mypy_path = [
+    "$MYPY_CONFIG_FILE_DIR/src/",
+]
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
@@ -74,6 +78,10 @@ testpaths = ["tests/"]
 
 [tool.ruff]
 line-length = 120
+src = ["src/"]
+target-version = "py311"
+
+[tool.ruff.lint]
 select = [
     "F",      # Pyflakes
     "E", "W", # pycodestyle
@@ -85,25 +93,29 @@ select = [
     "C4",     # flake8-comprehensions
     "PT",     # flake8-pytest-style
 ]
-src = ["src/"]
-target-version = "py311"
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
 
 [tool.tox]
 legacy_tox_ini = """
 [tox]
 env_list =
-    py{311}
-    mypy-py{311}
-    black
-    ruff
+    py{39, 310, 311, 312}
+    mypy-py{39, 310, 311, 312}
+    ruffformat
+    rufflint
 skip_missing_interpreters = true
 
 [testenv]
 description = run unit tests
 deps =
     pytest
+allowlist_externals =
+    sh
 commands =
-    python -m pytest
+    sh -c '[ -z "$(find tests/ -type f -a -name "*.py")" ] && echo "Skipping pytest" || pytest'
 package = wheel
 wheel_build_env = .pkg
 
@@ -112,18 +124,20 @@ description = delete coverage data
 deps =
     coverage[toml]
 commands =
-    python -m coverage erase
+    coverage erase
 labels =
     coverage
 skip_install = true
 
-[testenv:coveragerun-py{311}]
+[testenv:coveragerun-py{39, 310, 311, 312}]
 description = measure code coverage
 deps =
     coverage[toml]
     pytest
+allowlist_externals =
+    sh
 commands =
-    python -m coverage run
+    sh -c '[ -z "$(find tests/ -type f -a -name "*.py")" ] && echo "Skipping coverage run" || coverage run'
 depends =
     coverageclean
 labels =
@@ -133,38 +147,45 @@ labels =
 description = report code coverage
 deps =
     coverage[toml]
+allowlist_externals =
+    sh
 commands =
-    python -m coverage combine
-    python -m coverage report
+    sh -c '[ -z "$(find . -type f -a -name ".coverage.*")" ] && echo "Skipping coverage combine" || coverage combine'
+    sh -c '[ -z "$(find . -type f -a -name ".coverage")" ] && echo "Skipping coverage report" || coverage report'
 depends =
-    coveragerun-py{311}
+    coveragerun-py{39, 310, 311, 312}
 labels =
     coverage
 skip_install = true
 parallel_show_output = true
 
-[testenv:mypy-py{311}]
+[testenv:mypy-py{39, 310, 311, 312}]
 description = run type checks
 deps =
     mypy
     pytest
+allowlist_externals =
+    sh
 commands =
-    python -m mypy -p aoc
-    python -m mypy tests/
+    mypy -p fibo
+    mypy -p mypkg
+    mypy -p namespacepkg
+    mypy -p otherpkg
+    sh -c '[ -z "$(find tests/ -type f -a \\( -name "*.py" -o -name "*.pyi" \\))" ] && echo "Skipping mypy tests/" || mypy tests/'
 
-[testenv:black]
+[testenv:ruffformat]
 description = run format checks
 deps =
-    black
+    ruff
 commands =
-    python -m black --check src/ tests/
+    ruff format --check src/ tests/
 skip_install = true
 
-[testenv:ruff]
+[testenv:rufflint]
 description = run lint checks
 deps =
     ruff
 commands =
-    python -m ruff src/ tests/
+    ruff check src/ tests/
 skip_install = true
 """
