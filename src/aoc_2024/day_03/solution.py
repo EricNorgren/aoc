@@ -11,6 +11,7 @@ def read_file(file_path: str | Path) -> list[str]:
         lines = f.readlines()
     return list(map(lambda x: x.strip(), lines))
 
+
 def parse_maybe_mul_x_y(maybe_mul_x_y: str) -> int:
     digit_regex = r"\d{1,3},\d{1,3}"
     mul_regex = r"mul\(" + digit_regex + r"\)"
@@ -21,20 +22,12 @@ def parse_maybe_mul_x_y(maybe_mul_x_y: str) -> int:
         total += first * second
     return total
 
+
 def solution_first(lines: list[str]) -> None:
     print("FIRST")
-    digit_regex = r"\d{1,3},\d{1,3}"
-    mul_regex = r"mul\(" + digit_regex + r"\)"
     total = 0
     for maybe_mul_x_y in lines:
         total += parse_maybe_mul_x_y(maybe_mul_x_y=maybe_mul_x_y)
-        # mul_matches = re.findall(mul_regex, maybe_mul)
-        # total_inner = 0
-        # for mul in mul_matches:
-        #     first, second = map(lambda x: int(x), re.findall(digit_regex, mul)[0].split(","))
-        #     total += first * second
-        #     total_inner += first * second
-        # print(f"{total_inner=}")
     print(f"{total=}")
 
 
@@ -62,14 +55,15 @@ def solution_second(lines: list[str]) -> None:
             total += parse_maybe_mul_x_y(maybe_mul_x_y=maybe_mul_x_y)
     print(f"{total=}")
 
+
 def main() -> None:
     file_path = "input/mini_input.txt"
     file_path = "input/input.txt"
 
     lines = read_file(file_path=file_path)
     # print(lines[0])
-    solution_first(lines) # 187825547
-    solution_second(lines) # 85508223
+    solution_first(lines)  # 187825547
+    solution_second(lines)  # 85508223
 
 
 if __name__ == "__main__":
