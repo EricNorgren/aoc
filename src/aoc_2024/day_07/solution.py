@@ -25,12 +25,6 @@ def concat(x: int, y: int) -> int:
     return int(f"{x}{y}")
 
 
-@dataclass(frozen=True)
-class EquationStates:
-    current_index: int
-    current_value: int
-
-
 def equation_is_valid(
     input_values: list[int],
     current_index: int,
@@ -116,7 +110,6 @@ def solution_second(lines: list[str]) -> None:
             operators=operators,
             verbose=verbose,
         )
-
         if is_valid:
             num_valid += 1
             sum_valid += target_value
@@ -126,7 +119,6 @@ def solution_second(lines: list[str]) -> None:
 def main() -> None:
     file_path = "input/mini_input.txt"
     file_path = "input/input.txt"
-
     lines = read_file(file_path=file_path)
     print(lines[0])
     solution_first(lines)
