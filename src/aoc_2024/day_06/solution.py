@@ -17,11 +17,11 @@ def read_file(file_path: str | Path) -> list[str]:
     return list(map(lambda x: x.strip(), lines))
 
 
-# [X, Y], positive down, positive right
-UP_VECTOR = np.array([-1, 0], dtype=int)
-RIGHT_VECTOR = np.array([0, 1], dtype=int)
-DOWN_VECTOR = np.array([1, 0], dtype=int)
-LEFT_VECTOR = np.array([0, -1], dtype=int)
+# [Y, X], positive down, positive right
+UP_VECTOR = np.array([-1, 0], dtype=np.int_)
+RIGHT_VECTOR = np.array([0, 1], dtype=np.int_)
+DOWN_VECTOR = np.array([1, 0], dtype=np.int_)
+LEFT_VECTOR = np.array([0, -1], dtype=np.int_)
 UP_ARROW = "^"
 RIGHT_ARROW = ">"
 DOWN_ARROW = "v"
@@ -76,17 +76,15 @@ def get_end_index(
     current_direction_vector = current_direction.current_direction_vector
     changing_axis = np.transpose(np.nonzero(current_direction_vector)).squeeze()
     keeping_axis = np.transpose(np.nonzero(current_direction_vector == 0)).squeeze()
+
     pillar_candidates_mask = (guard_position[keeping_axis] == pillars[:, keeping_axis]).squeeze()
     pillar_candidates_idx = np.argwhere(pillar_candidates_mask).squeeze(1)
     pillar_candidates = pillars[pillar_candidates_idx]
+
     closest_distance = np.inf
-    edge_position = np.clip(
-        guard_position + current_direction.current_direction_vector * max(board_size) * 2,
-        a_min=(0, 0),
-        a_max=np.array(board_size, dtype=np.int_) - 1,
-    )
     end_index = np.zeros(2, dtype=np.int_) - 1  # Dummy placeholder until used
-    end_index_changing = -1
+    end_index_changing_axis = -1
+
     for pillar_candidate in pillar_candidates:
         pillar_vector = pillar_candidate - guard_position
         new_distance = (
@@ -99,19 +97,23 @@ def get_end_index(
         # print(f"{pillar_candidate=}, {new_distance=}")
         if new_distance < closest_distance and direction_sign == pillar_sign:
             closest_distance = new_distance
-            closest_pillar = pillar_candidate
-            end_index_changing = (
+            end_index_changing_axis = (
                 guard_position[changing_axis]
                 + current_direction.current_direction_vector[changing_axis] * closest_distance
             )
-            # print(f"FOUND NEW PILLAR: {closest_pillar=}, {new_distance=}")
+            # print(f"FOUND NEW PILLAR: {pillar_candidate=}, {new_distance=}")
     end_index[keeping_axis] = guard_position[keeping_axis]
-    if end_index_changing < 0:
+    if end_index_changing_axis < 0:
         end_position_type = EndPositionType.OUTSIDE
-        end_index_changing = edge_position[changing_axis]
+        edge_position = np.clip(
+            guard_position + current_direction.current_direction_vector * max(board_size) * 2,
+            a_min=(0, 0),
+            a_max=np.array(board_size, dtype=np.int_) - 1,
+        )
+        end_index_changing_axis = edge_position[changing_axis]
     else:
         end_position_type = EndPositionType.PILLAR
-    end_index[changing_axis] = end_index_changing
+    end_index[changing_axis] = end_index_changing_axis
     assert all([x >= 0 for x in end_index]), end_index
     return EndPositionResult(end_position=end_index, end_position_type=end_position_type)
 
@@ -199,14 +201,13 @@ class TimeTravel:
         self.lines = lines
         gameboard = GameBoard(lines=lines)
         gameboard.solution_first(verbose=False)
-        candidate_obstacle_positions_x = copy.deepcopy(gameboard.board_traveled)
+        candidate_obstacle_positions_x = gameboard.board_traveled
         candidate_obstacle_positions_x[gameboard.start_guard_position[0], gameboard.start_guard_position[1]] = "."
-        self.candidate_obstacle_positions = candidate_obstacle_positions_x == "X"
+        self.candidate_obstacle_positions = np.transpose(np.nonzero(candidate_obstacle_positions_x == "X"))
 
-    def solution_second(self, verbose=False) -> int:
+    def solution_second(self) -> int:
         obstacle_positions = []
-
-        for candidate_obstacle_position in tqdm(np.transpose(np.nonzero(self.candidate_obstacle_positions))):
+        for candidate_obstacle_position in tqdm(self.candidate_obstacle_positions):
             lines_with_obstacle = copy.deepcopy(self.lines)
             line_y = lines_with_obstacle[candidate_obstacle_position[0]]
             lines_with_obstacle[candidate_obstacle_position[0]] = line_y[:candidate_obstacle_position[1]] + "#" + line_y[candidate_obstacle_position[1] + 1:]
@@ -228,9 +229,7 @@ class TimeTravel:
                     visited_states.add(guard_state)
                 if end_position.end_position_type == EndPositionType.OUTSIDE:
                     break
-
-        print(f"calc::{gameboard.guard_position=}")
-        print(f"{obstacle_positions=}")
+        # print(f"{obstacle_positions=}")
         return len(obstacle_positions)
 
 
@@ -244,7 +243,7 @@ def solution_first(lines: list[str]) -> None:
 def solution_second(lines: list[str]) -> None:
     print("SECOND")
     timetravel = TimeTravel(lines=lines)
-    num_obstacles = timetravel.solution_second(verbose=False)
+    num_obstacles = timetravel.solution_second()
     print(f"{num_obstacles=}")
 
 
